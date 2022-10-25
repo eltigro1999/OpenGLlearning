@@ -20,16 +20,19 @@ const char* fragmentShaderSource =
 float vertices1[] = {
     0.5f, 0.0f, 0.0,
     0.1f, 0.5f, 0.0,
-    0.1f,-0.5f, 0.0,
-   
+    0.1f,-0.5f, 0.0
+};
+
+float vertices2[] = {
    -0.5f,  0.0f, 0.0,
    -0.1f,  0.5f, 0.0,
    -0.1f, -0.5f, 0.0
 };
 
-
 unsigned int VAO;
 unsigned int VBO;
+unsigned int VAO1;
+unsigned int VBO1;
 unsigned int vertexShader;
 unsigned int fragmentShader;
 unsigned int shaderProgram;
@@ -95,6 +98,15 @@ int main()
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
 
+    glGenVertexArrays(1, &VAO1);
+    glGenBuffers(1, &VBO1);
+    glBindVertexArray(VAO1);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO1);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices2), vertices2, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glBindVertexArray(0);
+
     // Цикл рендеринга
     while (!glfwWindowShouldClose(window))
     {
@@ -107,7 +119,9 @@ int main()
 
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindVertexArray(VAO1);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
         // glfw: обмен содержимым front- и back-буферов. Отслеживание событий ввода/вывода (была ли нажата/отпущена кнопка, перемещен курсор мыши и т.п.)
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -115,6 +129,8 @@ int main()
 
     glDeleteBuffers(1, &VBO);
     glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO1);
+    glDeleteVertexArrays(1, &VAO1);
 
  
     // glfw: завершение, освобождение всех ранее задействованных GLFW-ресурсов
