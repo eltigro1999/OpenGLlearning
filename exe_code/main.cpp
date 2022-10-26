@@ -17,6 +17,13 @@ const char* fragmentShaderSource =
 "FragColor=vec4(1.0f, 1.f, 1.f, 1.f);\n"
 "}\n";
 
+const char* fragmentShaderSourceYellow =
+"#version 330 core\n"
+"out vec4 FragColor;\n"
+"void main(){\n"
+"FragColor = vec4(1.0f, 1.0f, 0.0f, 1.0f);\n"
+"}\n";
+
 float vertices1[] = {
     0.5f, 0.0f, 0.0,
     0.1f, 0.5f, 0.0,
@@ -35,7 +42,9 @@ unsigned int VAO1;
 unsigned int VBO1;
 unsigned int vertexShader;
 unsigned int fragmentShader;
-unsigned int shaderProgram;
+unsigned int fragmentShaderYellow;
+unsigned int shaderProgramWhite;
+unsigned int shaderProgramYellow;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -75,19 +84,37 @@ int main()
 
     createShader(GL_VERTEX_SHADER, vertexShader, 1, vertexShaderSource);
     createShader(GL_FRAGMENT_SHADER, fragmentShader, 1, fragmentShaderSource);
-    shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
+    createShader(GL_FRAGMENT_SHADER, fragmentShaderYellow, 1, fragmentShaderSourceYellow);
+    shaderProgramWhite = glCreateProgram();
+    shaderProgramYellow = glCreateProgram();
+    
+    glAttachShader(shaderProgramWhite, vertexShader);
+    glAttachShader(shaderProgramWhite, fragmentShader);
+    glAttachShader(shaderProgramYellow, vertexShader);
+    glAttachShader(shaderProgramYellow, fragmentShaderYellow);
+    
+    glLinkProgram(shaderProgramWhite);
+    glLinkProgram(shaderProgramYellow);
+    
     int success;
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    glGetProgramiv(shaderProgramWhite, GL_LINK_STATUS, &success);
     if (!success) {
         char infoLog[512];
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+        glGetProgramInfoLog(shaderProgramWhite, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
     }
+
+    glGetProgramiv(shaderProgramYellow, GL_LINK_STATUS, &success);
+    if (!success) {
+        char infoLog[512];
+        glGetProgramInfoLog(shaderProgramWhite, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+        return 0;
+    }
+
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
+    glDeleteShader(fragmentShaderYellow);
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -114,12 +141,14 @@ int main()
         processInput(window);
 
         //Rendering
-        glClearColor(0.5, 0, 0.0, 1);
+        glClearColor(.0f, .0f, .0f, 1.f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(shaderProgram);
+        glUseProgram(shaderProgramWhite);
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
+        glUseProgram(0);
+        glUseProgram(shaderProgramYellow);
         glBindVertexArray(VAO1);
         glDrawArrays(GL_TRIANGLES, 0, 3);
         // glfw: обмен содержимым front- и back-буферов. Отслеживание событий ввода/вывода (была ли нажата/отпущена кнопка, перемещен курсор мыши и т.п.)
