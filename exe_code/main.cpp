@@ -22,9 +22,10 @@ const char* fragmentShaderSource =
 
 const char* fragmentShaderSourceYellow =
 "#version 330 core\n"
+"uniform vec4 ourColor;\n"
 "out vec4 FragColor;\n"
 "void main(){\n"
-"FragColor = vec4(1.0f, 1.0f, 0.0f, 1.0f);\n"
+"FragColor = ourColor;\n"
 "}\n";
 
 float vertices1[] = {
@@ -154,7 +155,12 @@ int main()
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glUseProgram(0);
+
+        float timeValue = glfwGetTime();
+        float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
+        int vertexColorLocation = glGetUniformLocation(shaderProgramYellow, "ourColor");
         glUseProgram(shaderProgramYellow);
+        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
         glBindVertexArray(VAO1);
         glDrawArrays(GL_TRIANGLES, 0, 3);
         // glfw: обмен содержимым front- и back-буферов. Отслеживание событий ввода/вывода (была ли нажата/отпущена кнопка, перемещен курсор мыши и т.п.)
