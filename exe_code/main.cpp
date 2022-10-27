@@ -6,15 +6,18 @@
 const char* vertexShaderSource =
 "#version 330 core\n"
 "layout(location = 0) in vec3 aPos;\n"
+"out vec4 vertexColor;\n"
 "void main() {\n"
 "gl_Position = vec4(aPos, 1.0);\n"
+"vertexColor=vec4(1.f, .5f, .4f, 1.0f );\n"
 "}\n";
 
 const char* fragmentShaderSource =
 "#version 330 core\n"
+"in vec4 vertexColor;\n"
 "out vec4 FragColor;\n"
 "void main(){\n"
-"FragColor=vec4(1.0f, 1.f, 1.f, 1.f);\n"
+"FragColor=vec4(vertexColor);\n"
 "}\n";
 
 const char* fragmentShaderSourceYellow =
@@ -134,6 +137,9 @@ int main()
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
 
+    int nrAttributes;
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
+    std::cout << "Max nr attributes: " << nrAttributes << std::endl;
     // Цикл рендеринга
     while (!glfwWindowShouldClose(window))
     {
