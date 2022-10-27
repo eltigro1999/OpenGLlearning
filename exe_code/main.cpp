@@ -9,7 +9,9 @@ const char* vertexShaderSource =
 "layout(location = 1) in vec3 aColor;\n"
 "out vec3 ourColor;\n"
 "void main() {\n"
+"vec4 reverse=vec4(-1.f, -1.f, -1.f, 1.0f);\n"
 "gl_Position = vec4(aPos, 1.f);\n"
+"gl_Position= gl_Position*reverse;\n"
 "ourColor=aColor;\n"
 "}\n";
 
