@@ -8,8 +8,9 @@ const char* vertexShaderSource =
 "layout(location = 0) in vec3 aPos;\n"
 "layout(location = 1) in vec3 aColor;\n"
 "out vec3 ourColor;\n"
+"uniform float offset;\n"
 "void main() {\n"
-"gl_Position = vec4(aPos.x, -aPos.y, aPos.z, 1.f);\n"
+"gl_Position = vec4(offset+aPos.x, -aPos.y, aPos.z, 1.f);\n"
 "ourColor=aColor;\n"
 "}\n";
 
@@ -116,6 +117,8 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(shaderProgram);
+        float offset = glGetUniformLocation(shaderProgram, "offset");
+        glUniform1f(offset, 0.3f);
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
