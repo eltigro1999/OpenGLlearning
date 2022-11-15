@@ -24,15 +24,17 @@ const char *fragmentShaderSource =
     "out vec4 FragColor;\n"
     "uniform sampler2D texture1;\n"
     "uniform sampler2D texture2;\n"
+    "uniform float visible;\n"
     "void main(){\n"
-    "FragColor=mix(texture(texture1, TexCoord), texture(texture2, TexCoord), 0.5f);\n"
+    "vec2 emojiCoord=vec2(1-TexCoord.x, TexCoord.y);\n"
+    "FragColor=mix(texture(texture1, TexCoord), texture(texture2, emojiCoord), visible);\n"
     "}\n";
 
 float vertices[] = {
-    0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-    -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f};
+     0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,
+     0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,
+    -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,
+    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f};
 
 unsigned int indices[] = {
     0, 1, 2,
@@ -49,6 +51,8 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
 void checkShader(const unsigned int &shader);
 void createShader(const GLenum &shaderType, unsigned int &shader, const int &linesAmount, const char *&shaderSource);
+void changeVisibility(GLFWwindow* window, float& visible);
+
 
 // Константы
 const unsigned int SCR_WIDTH = 800;
@@ -136,7 +140,7 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     int width, height, nrChannels;
-    unsigned char *data = stbi_load("/home/ani/Edmon/cpp/opengl/ravesli/exe_code/container.jpg", &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load("D:\\Edmon\\OPENGL\\OpenGLlearning\\exe_code\\container.jpg", &width, &height, &nrChannels, 0);
 
     if (data)
     {
@@ -161,7 +165,7 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    data = stbi_load("/home/ani/Edmon/cpp/opengl/ravesli/exe_code/awesomeface.png", &width, &height, &nrChannels, 0);
+    data = stbi_load("D:\\Edmon\\OPENGL\\OpenGLlearning\\exe_code\\awesomeface.png", &width, &height, &nrChannels, 0);
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
@@ -174,15 +178,18 @@ int main()
     stbi_image_free(data);
 
     glUseProgram(shaderProgram);
-    glUniform1i(glGetUniformLocation(shaderProgram, "texture"), 0);
-    glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 1);
+    glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 0);
+    glUniform1i(glGetUniformLocation(shaderProgram, "texture2"), 1);
+    
+    GLint myUniformLocation = glGetUniformLocation(shaderProgram, "visible");
+    float visible = 0.5f;
 
     // Цикл рендеринга
     while (!glfwWindowShouldClose(window))
     {
         // user input
         processInput(window);
-
+        glUniform1f(myUniformLocation, visible);
         // Rendering
         glClearColor(.5f, .5f, .5f, 1.f);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -194,6 +201,7 @@ int main()
         glBindTexture(GL_TEXTURE_2D, texture1);
 
         glUseProgram(shaderProgram);
+        changeVisibility(window, visible);
 
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -215,6 +223,14 @@ void processInput(GLFWwindow *window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+}
+
+void changeVisibility(GLFWwindow* window, float& visible)
+{
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS && visible < 1.0f)
+        visible += .1f;
+    else if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS && visible>0.1f)
+        visible -= .1f;
 }
 
 // glfw: всякий раз, когда изменяются размеры окна (пользователем или операционной системой), вызывается данная callback-функция
