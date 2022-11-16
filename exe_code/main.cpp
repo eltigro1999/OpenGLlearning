@@ -1,6 +1,10 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "stb_image.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 
 #include <iostream>
 
@@ -11,8 +15,9 @@ const char *vertexShaderSource =
     "layout(location = 2) in vec2 aTexCoord;\n"
     "out vec2 TexCoord;\n"
     "out vec3 ourColor;\n"
+    "uniform mat4 transform;\n"
     "void main() {\n"
-    "gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.f);\n"
+    "gl_Position = transform * vec4(aPos.x, aPos.y, aPos.z, 1.f);\n"
     "ourColor=aColor;\n"
     "TexCoord = aTexCoord;\n"
     "}\n";
@@ -184,11 +189,23 @@ int main()
     GLint myUniformLocation = glGetUniformLocation(shaderProgram, "visible");
     float visible = 0.5f;
 
+
+
+    unsigned int transformLoc = glGetUniformLocation(shaderProgram, "transform");
+
     // Цикл рендеринга
     while (!glfwWindowShouldClose(window))
     {
         // user input
         processInput(window);
+
+        glm::mat4 trans = glm::mat4(1.0f);
+        trans = glm::scale(trans, glm::vec3(.5f, .5f, .5f));
+        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.f, 0.f, 1.f));
+
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+
         glUniform1f(myUniformLocation, visible);
         // Rendering
         glClearColor(.5f, .5f, .5f, 1.f);
