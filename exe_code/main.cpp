@@ -15,9 +15,11 @@ const char *vertexShaderSource =
     "layout(location = 2) in vec2 aTexCoord;\n"
     "out vec2 TexCoord;\n"
     "out vec3 ourColor;\n"
-    "uniform mat4 transform;\n"
+    "uniform mat4 model;\n"
+    "uniform mat4 view;\n"
+    "uniform mat4 projection;\n"
     "void main() {\n"
-    "gl_Position = transform * vec4(aPos.x, aPos.y, aPos.z, 1.f);\n"
+    "gl_Position = projection * view *  model * vec4(aPos.x, aPos.y, aPos.z, 1.f);\n"
     "ourColor=aColor;\n"
     "TexCoord = aTexCoord;\n"
     "}\n";
@@ -192,7 +194,6 @@ int main()
 
 
 
-    unsigned int transformLoc = glGetUniformLocation(shaderProgram, "transform");
 
     // Цикл рендеринга
     while (!glfwWindowShouldClose(window))
@@ -200,12 +201,21 @@ int main()
         // user input
         processInput(window);
 
-        glm::mat4 trans = glm::mat4(1.0f);
-        trans = glm::scale(trans, glm::vec3(.5f, .5f, .5f));
-        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
-        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.f, 0.f, 1.f));
+        glm::mat4 model = glm::mat4(1.f);
+        model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.f, 0.f, 0.f));
 
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+        glm::mat4 view = glm::mat4(1.f);
+        view = glm::translate(view, glm::vec3(0.f, 0.f, -3.f));
+
+        glm::mat4 projection = glm::mat4(1.f);
+        projection = glm::perspective(glm::radians(45.0f), 800.f/600.f, .1f, 100.f);
+
+        GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
+        GLint viewLoc = glGetUniformLocation(shaderProgram, "view");
+        GLint projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
         glUniform1f(myUniformLocation, visible);
         // Rendering
@@ -222,15 +232,6 @@ int main()
         changeVisibility(window, visible);
 
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-        glm::mat4 trans1 = glm::mat4(1.0f);
-        float TimeForScale = (float)glfwGetTime();
-        trans1 = glm::scale(trans1, glm::vec3(glm::sin(TimeForScale), glm::sin(TimeForScale), glm::sin(TimeForScale)));
-        trans1 = glm::translate(trans1, glm::vec3(-0.5f, 0.5f, 0.0f));
-        trans1 = glm::rotate(trans1, (float)glfwGetTime(), glm::vec3(0.f, 0.f, 1.f));
-
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans1));
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         // glfw: обмен содержимым front- и back-буферов. Отслеживание событий ввода/вывода (была ли нажата/отпущена кнопка, перемещен курсор мыши и т.п.)
