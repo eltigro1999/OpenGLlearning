@@ -81,6 +81,19 @@ unsigned int indices[] = {
     0, 1, 2,
     0, 2, 3};
 
+glm::vec3 cube_positions[] = {
+    glm::vec3(12.0f, .0f, -30.0f),
+    glm::vec3(14.0f, .3f, -24.0f),
+    glm::vec3(-15.5f, .6f, -17.0f),
+    glm::vec3(-20.0f, -.4f, -40.0f),
+    glm::vec3(-5.0f, -2.0f, -12.0f),
+    glm::vec3(4.0f, -1.0f, -20.0f),
+    glm::vec3(8.0f, -1.0f, -40.0f),
+    glm::vec3(6.0f, 1.0f, -27.45f),
+    glm::vec3(7.f, .4f, -15.0f),
+    glm::vec3(.3f, 1.0f, -25.0f)
+};
+
 unsigned int VAO;
 unsigned int VBO;
 unsigned int EBO;
@@ -148,16 +161,13 @@ int main()
     glDeleteShader(fragmentShader);
 
     glGenVertexArrays(1, &VAO);
-    //glGenBuffers(1, &EBO);
+    
     glGenBuffers(1, &VBO);
-
     glBindVertexArray(VAO);
 
-    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
@@ -221,9 +231,8 @@ int main()
     
     GLint myUniformLocation = glGetUniformLocation(shaderProgram, "visible");
     float visible = 0.5f;
-
-
-
+    
+    glEnable(GL_DEPTH_TEST);
 
     // Цикл рендеринга
     while (!glfwWindowShouldClose(window))
@@ -231,26 +240,11 @@ int main()
         // user input
         processInput(window);
 
-        glm::mat4 model = glm::mat4(1.f);
-        model = glm::rotate(model, glm::radians(50.f)*(float)glfwGetTime(), glm::vec3(.5f, 1.f, 0.f));
-
-        glm::mat4 view = glm::mat4(1.f);
-        view = glm::translate(view, glm::vec3(0.f, 0.f, -3.f));
-
-        glm::mat4 projection = glm::mat4(1.f);
-        projection = glm::perspective(glm::radians(45.0f), 800.f/600.f, .1f, 100.f);
-
-        GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
-        GLint viewLoc = glGetUniformLocation(shaderProgram, "view");
-        GLint projectionLoc = glGetUniformLocation(shaderProgram, "projection");
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
         glUniform1f(myUniformLocation, visible);
         // Rendering
         glClearColor(.5f, .5f, .5f, 1.f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
@@ -262,8 +256,29 @@ int main()
         changeVisibility(window, visible);
 
         glBindVertexArray(VAO);
-        /*glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);*/
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        for (int i = 0; i < 10; ++i) {
+            glm::mat4 model = glm::mat4(1.f);
+            float rotation = 1.f;
+            if (i % 3 == 0) {
+                rotation = (float)glfwGetTime();
+            }
+            model = glm::rotate(model, glm::radians(50.f) * rotation, glm::vec3(.0f, 1.f, 0.f));
+
+            glm::mat4 view = glm::mat4(1.f);
+            view = glm::translate(view, cube_positions[i]);
+
+            glm::mat4 projection = glm::mat4(1.f);
+            projection = glm::perspective(glm::radians(70.f), 800.f / 600.f, .1f, 100.f);
+
+            GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
+            GLint viewLoc = glGetUniformLocation(shaderProgram, "view");
+            GLint projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+            glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+            glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
 
         // glfw: обмен содержимым front- и back-буферов. Отслеживание событий ввода/вывода (была ли нажата/отпущена кнопка, перемещен курсор мыши и т.п.)
         glfwSwapBuffers(window);
