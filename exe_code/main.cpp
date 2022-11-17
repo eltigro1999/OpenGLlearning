@@ -39,7 +39,8 @@ float vertices[] = {
      0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,
      0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,
     -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,
-    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f};
+    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f
+};
 
 unsigned int indices[] = {
     0, 1, 2,
@@ -48,6 +49,9 @@ unsigned int indices[] = {
 unsigned int VAO;
 unsigned int VBO;
 unsigned int EBO;
+unsigned int VAO1;
+unsigned int VBO1;
+unsigned int EBO1;
 unsigned int vertexShader;
 unsigned int fragmentShader;
 unsigned int shaderProgram;
@@ -130,6 +134,27 @@ int main()
     glEnableVertexAttribArray(1);
 
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    glGenVertexArrays(1, &VAO1);
+    glGenBuffers(1, &EBO1);
+    glGenBuffers(1, &VBO1);
+
+    glBindVertexArray(VAO1);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO1);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO1);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
     glBindVertexArray(0);
@@ -221,6 +246,17 @@ int main()
         changeVisibility(window, visible);
 
         glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        glBindVertexArray(VAO1);
+
+        glm::mat4 trans1 = glm::mat4(1.0f);
+        float TimeForScale = (float)glfwGetTime();
+        trans1 = glm::scale(trans1, glm::vec3(glm::sin(TimeForScale), glm::sin(TimeForScale), glm::sin(TimeForScale)));
+        trans1 = glm::translate(trans1, glm::vec3(-0.5f, 0.5f, 0.0f));
+        trans1 = glm::rotate(trans1, (float)glfwGetTime(), glm::vec3(0.f, 0.f, 1.f));
+
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans1));
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         // glfw: обмен содержимым front- и back-буферов. Отслеживание событий ввода/вывода (была ли нажата/отпущена кнопка, перемещен курсор мыши и т.п.)
